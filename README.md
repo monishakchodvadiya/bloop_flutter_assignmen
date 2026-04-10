@@ -14,3 +14,8 @@ flutter run
 - Cache-first data loading
 - Background refresh
 - Manual refresh
+
+#Demo
+
+### Screen Recording
+https://drive.google.com/file/d/1ceK9kq-qqm_fwlqCUUsGvlLzT-nRZ84r/view?usp=sharing
