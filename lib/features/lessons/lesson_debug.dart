@@ -57,5 +57,24 @@ class LessonCacheService {
     _box = await Hive.openBox('lessons');
   }
 
+  Future<void> saveLesson(LessonModel lesson) async {
+    await _box.put(lesson.id, lesson.toJson());
+  }
 
+  Future<LessonModel?> getLesson(String id) async {
+    final data = _box.get(id);
+
+    //  FIX 2:
+    // Problem: fromJson called on null → runtime crash
+    // Consequence: App crashes on cache miss
+    // Fix: Check null before parsing
+
+    if (data == null) return null;
+
+    return LessonModel.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  Future<void> clearAll() async {
+    await _box.clear();
+  }
 }
