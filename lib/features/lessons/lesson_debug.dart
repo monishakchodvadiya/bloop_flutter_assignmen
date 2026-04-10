@@ -136,3 +136,36 @@ class LessonListWidget extends ConsumerWidget {
   }
 }
 
+
+
+StreamSubscription? _sub;
+
+void listenToLessons(String courseId) {
+  // NOTE:
+  // Firebase is mocked for this assignment as allowed in instructions.
+  // This simulates Firestore real-time updates.
+
+  _sub = Stream.periodic(const Duration(seconds: 2)).listen((_) {
+    final mockDocs = [
+      {'title': 'Lesson 1'},
+      {'title': 'Lesson 2'},
+    ];
+
+    final lessons = mockDocs.asMap().entries.map((entry) {
+      final index = entry.key;
+      final data = entry.value;
+
+      //  FIX 4:
+      // Problem: Original code mutates Firestore map directly → data['id'] = doc.id
+      // Consequence: Can cause unexpected side effects because Firestore maps should be treated as immutable
+      // Fix: Create a new copy before modifying
+
+      final newData = Map<String, dynamic>.from(data);
+      newData['id'] = index.toString();
+
+      return LessonModel.fromJson(newData);
+    }).toList();
+
+    print(lessons);
+  });
+}
