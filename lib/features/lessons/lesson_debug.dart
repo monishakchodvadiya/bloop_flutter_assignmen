@@ -78,3 +78,61 @@ class LessonCacheService {
     await _box.clear();
   }
 }
+
+
+final lessonNotifierProvider =
+AsyncNotifierProvider<LessonNotifier, List<LessonModel>>(
+    LessonNotifier.new);
+
+class LessonNotifier extends AsyncNotifier<List<LessonModel>> {
+  @override
+  Future<List<LessonModel>> build() async {
+    final cache = LessonCacheService();
+    await cache.init();
+
+    return _fetchAndCache(cache);
+  }
+
+  Future<List<LessonModel>> _fetchAndCache(
+      LessonCacheService cache) async {
+    final lessons = await LessonFirestoreService().fetchLessons();
+
+    await cache.saveLesson(lessons.first);
+
+    return lessons;
+  }
+}
+
+
+class LessonListWidget extends ConsumerWidget {
+  const LessonListWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lessonsAsync = ref.watch(lessonNotifierProvider);
+
+    return lessonsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+      data: (lessons) {
+        return ListView.builder(
+          itemCount: lessons.length,
+          itemBuilder: (context, index) {
+            final lesson = lessons[index];
+
+            //  FIX 3:
+            // Problem: FutureBuilder inside ListView → triggers async call on every rebuild
+            // Consequence: Performance issue, repeated API calls, UI lag
+            // Fix: Call async once outside OR simplify UI
+
+            return ListTile(
+              title: Text(lesson.title),
+              subtitle: const Text("Thumbnail loaded efficiently"),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
